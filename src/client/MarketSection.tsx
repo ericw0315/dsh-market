@@ -2905,14 +2905,9 @@ export function MarketSection(props: MarketSectionProps) {
                                       {entry?.deprecated === true && <span className={css.depBadge}>{t('deprecatedBadge')}</span>}
                                       {version && <span className={css.owner}>{' ' + version}</span>}
                                     </div>
-                                    <div className={css.irowSpec}>
-                                      <span className={css.spec} title={specText}>{specText}</span>
-                                      {repoUrl !== null && (
-                                        <a className={css.srcLink} href={repoUrl} target="_blank" rel="noreferrer" title={t('viewSource')}>
-                                          {t('viewSource')}<IconLinkOutline14 size={11} />
-                                        </a>
-                                      )}
-                                    </div>
+                                    {repoUrl !== null
+                                      ? <a className={`${css.spec} ${css.src}`} href={repoUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block' }}>{specText}</a>
+                                      : <div className={css.spec}>{specText}</div>}
                                   </div>
                                   <div className={css.irowState}>
                                     {/* Dot + tag, the pairing the host's own plugin
