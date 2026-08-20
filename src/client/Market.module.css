@@ -98,11 +98,13 @@
 .warnLine{color:var(--dsw-alias-state-warn-primary,#b45309);font-weight:600;font-size:12px;line-height:18px;margin:0;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .modalNote{font-size:12px;color:var(--dsw-alias-label-tertiary,#8b93a1);line-height:18px;margin:12px 0 0;display:flex;align-items:center;gap:4px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px}
-/* The Installed list is the same two-up grid: one list that reads as rows and
-   another as cards made the two tabs look like different products. */
-.pairGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px}
+/* The Installed list is a single column: one plugin per row. A two-up grid
+   squeezed every card's controls into half the width, so the update/uninstall
+   buttons wrapped and the rows stopped lining up. One full-width row per
+   plugin gives the three-band card the room it needs. */
+.pairGrid{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:10px}
 @media (max-width:680px){
-  .grid,.pairGrid{grid-template-columns:minmax(0,1fr)}
+  .grid{grid-template-columns:minmax(0,1fr)}
 }
 .swatches{display:flex;gap:0;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--dsw-alias-border-l2,#e5e7eb)}
 .themesGrid{margin-bottom:12px}
