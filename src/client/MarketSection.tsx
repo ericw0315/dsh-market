@@ -110,6 +110,13 @@ function phaseLabel(phase: NonNullable<MarketStatus['phase']>, t: Translate): st
   return t('phaseBuilding')
 }
 
+/** A version/commit for display: 40-hex SHAs collapse to their first 7 chars,
+ * semver keeps a "v" prefix. Empty on missing/unreadable inputs. */
+function versionLabel(value: string | null | undefined): string {
+  if (value === null || value === undefined || value === '') return ''
+  return /^[0-9a-f]{40}$/i.test(value) ? value.slice(0, 7) : 'v' + value
+}
+
 /**
  * Card avatar: the plugin owner's GitHub avatar (no API, browser-cached),
  * falling back to the initial-letter tile when it can't load.
@@ -2828,6 +2835,11 @@ export function MarketSection(props: MarketSectionProps) {
                             const act = activations[name]
                             const meta = act !== undefined ? activationMeta(act.state, t) : null
                             const version = status && status.version ? 'v' + status.version : ''
+                            const currentLabel = versionLabel(status?.current)
+                            const latestLabel = versionLabel(status?.latest)
+                            const versionDelta = status?.updateAvailable === true && currentLabel !== '' && latestLabel !== ''
+                              ? `${currentLabel} → ${latestLabel}`
+                              : ''
                             const specText = String(spec)
                             const ghSpec = /^github:([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+?)(?:#|$)/.exec(specText)
                             const repoUrl = entry !== undefined ? entry.url : ghSpec !== null ? 'https://github.com/' + ghSpec[1] : null
@@ -2853,9 +2865,14 @@ export function MarketSection(props: MarketSectionProps) {
                                       {entry?.deprecated === true && <span className={css.depBadge}>{t('deprecatedBadge')}</span>}
                                       {version && <span className={css.owner}>{' ' + version}</span>}
                                     </div>
-                                    {repoUrl !== null
-                                      ? <a className={`${css.spec} ${css.src}`} href={repoUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block' }}>{specText}</a>
-                                      : <div className={css.spec}>{specText}</div>}
+                                    <div className={css.irowSpec}>
+                                      <span className={css.spec} title={specText}>{specText}</span>
+                                      {repoUrl !== null && (
+                                        <a className={css.srcLink} href={repoUrl} target="_blank" rel="noreferrer" title={t('viewSource')}>
+                                          {t('viewSource')}<IconLinkOutline14 size={11} />
+                                        </a>
+                                      )}
+                                    </div>
                                   </div>
                                   <div className={css.irowState}>
                                     {/* Dot + tag, the pairing the host's own plugin
@@ -2942,60 +2959,59 @@ export function MarketSection(props: MarketSectionProps) {
                                     </div>
                                   )}
                                 </div>
-                                {/* Footer: the primary action (update) on the left, management
-                                    (replacement + uninstall) on the right, divided from the
-                                    facts above. The market itself never reaches this row
-                                    (filtered out above — it manages itself from its own
+                                {/* Footer: the update action (with its version delta) and
+                                    management (replacement + uninstall) all pin right, divided
+                                    from the facts above. The market itself never reaches this
+                                    row (filtered out above — it manages itself from its own
                                     settings card), so no self-toggle special case is needed. */}
                                 <div className={css.irowActions}>
-                                  <div className={css.irowUpdate}>
-                                    {missing
-                                      ? <span className={css.metaTag}>{t('notInstalled')}</span>
-                                      : updatedNames.includes(name)
-                                        ? <span className={`${css.metaTag} ${css.metaTagOk}`}>{act?.state === 'live' ? t('updatedLive') : t('updated')}</span>
-                                        : updatingName === name
-                                          ? <Button variant="primary" size="sm" className={css.warnBtn} disabled>{t('updating')}</Button>
-                                          : status && status.updateAvailable
-                                            ? (
-                                                <Button
-                                                  variant="primary"
-                                                  size="sm"
-                                                  className={css.warnBtn}
-                                                  disabled={updatingName !== null}
-                                                  onClick={() => doUpdate(name)}
-                                                >{t('update')}</Button>
-                                              )
-                                            : status && status.kind === 'linked'
-                                              ? <span className={css.metaTag}>{t('linkedDev')}</span>
-                                              : <span className={css.metaTag}>{t('upToDate')}</span>}
-                                  </div>
-                                  <div className={css.irowManage}>
-                                    {entry !== undefined && entry.deprecated === true && entry.replacement !== undefined && (() => {
-                                      const replacement = data?.plugins.find(r => r.name === entry.replacement)
-                                      if (replacement === undefined) return null
-                                      return (
-                                        <>
-                                          <Button variant="outline" size="sm" onClick={() => { setCat('all'); setQ(entry.replacement!); setTab('discover') }}>{t('viewReplacement')}</Button>
-                                          {!isInstalled(replacement, installed, repoIdentities, data?.plugins, repoHints) && (
-                                            <Button variant="outline" size="sm" onClick={() => setConfirming(replacement)}>{t('installReplacement')}</Button>
-                                          )}
-                                        </>
-                                      )
-                                    })()}
-                                    {!missing && name !== 'dsh-market' && name !== 'dshmarket' && (
-                                      removingName === name
-                                        ? <Button variant="outline" size="sm" className={css.dangerBtn} disabled>{t('uninstalling')}</Button>
-                                        : (
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              className={css.dangerBtn}
-                                              disabled={removingName !== null || busyUrl !== null || updatingName !== null}
-                                              onClick={() => setRemoveConfirm(name)}
-                                            >{t('uninstall')}</Button>
-                                          )
-                                    )}
-                                  </div>
+                                  {versionDelta !== '' && (
+                                    <span className={css.versionDelta}>{versionDelta}</span>
+                                  )}
+                                  {missing
+                                    ? <span className={css.metaTag}>{t('notInstalled')}</span>
+                                    : updatedNames.includes(name)
+                                      ? <span className={`${css.metaTag} ${css.metaTagOk}`}>{act?.state === 'live' ? t('updatedLive') : t('updated')}</span>
+                                      : updatingName === name
+                                        ? <Button variant="primary" size="sm" className={css.warnBtn} disabled>{t('updating')}</Button>
+                                        : status && status.updateAvailable
+                                          ? (
+                                              <Button
+                                                variant="primary"
+                                                size="sm"
+                                                className={css.warnBtn}
+                                                disabled={updatingName !== null}
+                                                onClick={() => doUpdate(name)}
+                                              >{t('update')}</Button>
+                                            )
+                                          : status && status.kind === 'linked'
+                                            ? <span className={css.metaTag}>{t('linkedDev')}</span>
+                                            : <span className={css.metaTag}>{t('upToDate')}</span>}
+                                  {entry !== undefined && entry.deprecated === true && entry.replacement !== undefined && (() => {
+                                    const replacement = data?.plugins.find(r => r.name === entry.replacement)
+                                    if (replacement === undefined) return null
+                                    return (
+                                      <>
+                                        <Button variant="outline" size="sm" onClick={() => { setCat('all'); setQ(entry.replacement!); setTab('discover') }}>{t('viewReplacement')}</Button>
+                                        {!isInstalled(replacement, installed, repoIdentities, data?.plugins, repoHints) && (
+                                          <Button variant="outline" size="sm" onClick={() => setConfirming(replacement)}>{t('installReplacement')}</Button>
+                                        )}
+                                      </>
+                                    )
+                                  })()}
+                                  {!missing && name !== 'dsh-market' && name !== 'dshmarket' && (
+                                    removingName === name
+                                      ? <Button variant="outline" size="sm" className={css.dangerBtn} disabled>{t('uninstalling')}</Button>
+                                      : (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className={css.dangerBtn}
+                                            disabled={removingName !== null || busyUrl !== null || updatingName !== null}
+                                            onClick={() => setRemoveConfirm(name)}
+                                          >{t('uninstall')}</Button>
+                                        )
+                                  )}
                                 </div>
                               </div>
                             )

@@ -64,6 +64,12 @@ export interface UpdateStatus {
   updateAvailable?: boolean
   version?: string
   kind?: string
+  /** Installed ref — semver for npm installs, the locked commit for github. */
+  current?: string | null
+  /** Latest ref — registry `latest` for npm, HEAD commit for github. */
+  latest?: string | null
+  /** The channel points at this version and it is not newer: a switch. */
+  channelSwitch?: string
 }
 
 /** Poll payload from /dsh-market/status. */
