@@ -333,20 +333,24 @@
    the column instead of drifting with whichever slot happens to render. */
 .irowHead{display:flex;align-items:flex-start;gap:10px;min-width:0}
 .irowTitle{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+/* Source line under the name: the spec (mono) + an explicit "源码" link, both
+   on one row so the source is reachable without hunting for a hidden link. */
+.irowSpec{display:flex;align-items:center;gap:8px;min-width:0}
+.irowSpec .spec{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srcLink{display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary,#6b7280);text-decoration:none;white-space:nowrap;flex-shrink:0}
+.srcLink:hover{color:var(--dsw-alias-brand-primary,#4f6ef7)}
 .irowState{flex-shrink:0;display:flex;align-items:center;gap:8px}
 /* No gap here on purpose: the meta items (description, activation chip,
    deprecation warning, progress) carry their own margins, and adding a flex
    gap would stack on top of them. */
 .irowMeta{display:flex;flex-direction:column;min-width:0}
 .irowMeta:empty{display:none}
-/* Footer: update pinned left (the primary action), management (replacement +
-   uninstall) pinned right, so the update button never shares a line with
-   uninstall. The divider is what says "here is what you can do" below the
-   facts about the install. */
-.irowActions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-width:0;
+/* Footer: update (with its version delta) and management (replacement +
+   uninstall) all pin right in one group. The divider is what says "here is
+   what you can do" below the facts about the install. */
+.irowActions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;min-width:0;
              padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e5e7eb)}
-.irowUpdate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
-.irowManage{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.versionDelta{font-size:11px;line-height:16px;color:var(--dsw-alias-label-tertiary,#8b93a1);font-family:ui-monospace,Menlo,monospace;white-space:nowrap;flex-shrink:0}
 .irowMissing{filter:grayscale(1);opacity:.5}
 .irow .src,.irow .owner{white-space:nowrap;flex-shrink:0}
 .irow button{white-space:nowrap;flex-shrink:0}
