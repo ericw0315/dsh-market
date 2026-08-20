@@ -325,13 +325,28 @@
 .retryBtn{margin-top:4px}
 .irow{background:var(--dsw-alias-bg-layer-1,#fff);border:1px solid var(--dsw-alias-border-l2,#e5e7eb);
       border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
-/* State pins left, controls to the right: right-aligning the whole group made
-   the state tag's position depend on whether its neighbour rendered 更新 or
-   已是最新, so two cards' state tags never sat at the same x. */
-.irowActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
-.irowActions > .stateTag{margin-right:auto}
+/* The card reads as three bands — head (identity + state), meta (the facts),
+   and a divided footer (actions). Each band is its own flex row, so a card
+   never re-flows its controls mid-line and neighbouring cards line up down
+   the column instead of drifting with whichever slot happens to render. */
+.irowHead{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.irowTitle{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.irowState{flex-shrink:0;display:flex;align-items:center;gap:8px}
+/* No gap here on purpose: the meta items (description, activation chip,
+   deprecation warning, progress) carry their own margins, and adding a flex
+   gap would stack on top of them. */
+.irowMeta{display:flex;flex-direction:column;min-width:0}
+.irowMeta:empty{display:none}
+/* Footer: update pinned left (the primary action), management (replacement +
+   uninstall) pinned right, so the update button never shares a line with
+   uninstall. The divider is what says "here is what you can do" below the
+   facts about the install. */
+.irowActions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-width:0;
+             padding-top:10px;border-top:1px solid var(--dsw-alias-border-l2,#e5e7eb)}
+.irowUpdate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.irowManage{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
 .irowMissing{filter:grayscale(1);opacity:.5}
-.irow>.src,.irow>.owner{white-space:nowrap;flex-shrink:0}
+.irow .src,.irow .owner{white-space:nowrap;flex-shrink:0}
 .irow button{white-space:nowrap;flex-shrink:0}
 .tabSearchRow{display:flex;padding:0 4px 10px}
 .tabSearch{width:100%}

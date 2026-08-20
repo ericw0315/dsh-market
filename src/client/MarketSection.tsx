@@ -2839,50 +2839,82 @@ export function MarketSection(props: MarketSectionProps) {
                             const toggleable = off || (act !== undefined && (act.state === 'live' || act.state === 'restart'))
                             return (
                               <div key={name} className={missing ? `${css.irow} ${css.irowMissing}` : css.irow}>
-                                <div style={{ minWidth: 0 }}>
-                                  <div className={css.nm}>
-                                    {/* The name is the link to the README. A separate button
-                                        beside it pointed at the same page. */}
+                                {/* Head: identity on the left, state (label + switch) pinned
+                                    right so the switch lines up down the column instead of
+                                    drifting with whichever slot its neighbour renders. */}
+                                <div className={css.irowHead}>
+                                  <div className={css.irowTitle}>
+                                    <div className={css.nm}>
+                                      {/* The name is the link to the README. A separate button
+                                          beside it pointed at the same page. */}
+                                      {repoUrl !== null
+                                        ? <a className={css.nameLink} href={repoUrl + '#readme'} target="_blank" rel="noreferrer" title={t('readme')}>{name}</a>
+                                        : name}
+                                      {entry?.deprecated === true && <span className={css.depBadge}>{t('deprecatedBadge')}</span>}
+                                      {version && <span className={css.owner}>{' ' + version}</span>}
+                                    </div>
                                     {repoUrl !== null
-                                      ? <a className={css.nameLink} href={repoUrl + '#readme'} target="_blank" rel="noreferrer" title={t('readme')}>{name}</a>
-                                      : name}
-                                    {entry?.deprecated === true && <span className={css.depBadge}>{t('deprecatedBadge')}</span>}
-                                    {version && <span className={css.owner}>{' ' + version}</span>}
+                                      ? <a className={`${css.spec} ${css.src}`} href={repoUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block' }}>{specText}</a>
+                                      : <div className={css.spec}>{specText}</div>}
                                   </div>
-                                  {repoUrl !== null
-                                    ? <a className={`${css.spec} ${css.src}`} href={repoUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-block' }}>{specText}</a>
-                                    : <div className={css.spec}>{specText}</div>}
+                                  <div className={css.irowState}>
+                                    {/* Dot + tag, the pairing the host's own plugin
+                                        inventory uses for exactly this state. */}
+                                    {!missing && (
+                                      <span className={css.stateTag} data-on={off ? 'false' : 'true'}>
+                                        <span className={css.stateDot} data-on={off ? 'false' : 'true'} />
+                                        {off ? t('disabledState') : t('switchOnLabel')}
+                                      </span>
+                                    )}
+                                    {toggleable && (
+                                      <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={!off}
+                                        aria-label={(off ? t('enable') : t('disable')) + ' ' + name}
+                                        className={off ? css.switch : `${css.switch} ${css.switchOn}`}
+                                        disabled={togglingName !== null || busyUrl !== null || updatingName !== null || removingName !== null}
+                                        onClick={() => doToggle(name, off)}
+                                      >
+                                        <span className={css.switchKnob} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                                {/* Meta: the facts about this install, kept off the control
+                                    bands above and below. */}
+                                <div className={css.irowMeta}>
                                   {entry !== undefined && (
                                     <div className={`${css.desc} ${css.descTight}`}>
                                       {(entry.description && (entry.description[lang] || entry.description.en)) || ''}
                                     </div>
                                   )}
                                   {!off && act !== undefined && meta !== null && (
-                                        <div className={css.act}>
-                                          {/* Only a state the switch does NOT already show earns a
-                                              line here: "installed but not active" is news, "live"
-                                              is what the switch is for. */}
-                                          {meta.dot !== 'done' && (
-                                            <span className={meta.dot === 'error' ? css.actBroken : css.actWarn}>
-                                              <StateDot state={meta.dot} size={7} />
-                                              {meta.label}
-                                            </span>
-                                          )}
-                                          {act.state !== 'live' && act.reasons.length > 0 && (
-                                            <DisclosureRow
-                                              icon={<IconQuestionOutline14 size={14} />}
-                                              title={t('actWhy')}
-                                              open={whyOpen === name}
-                                              expandable
-                                              expandOnRowClick
-                                              onToggle={() => setWhyOpen(whyOpen === name ? null : name)}
-                                              className={css.actWhy}
-                                            >
-                                              <div className={css.spec}>{act.reasons.join(' / ')}</div>
-                                            </DisclosureRow>
-                                          )}
-                                        </div>
+                                    <div className={css.act}>
+                                      {/* Only a state the switch does NOT already show earns a
+                                          line here: "installed but not active" is news, "live"
+                                          is what the switch is for. */}
+                                      {meta.dot !== 'done' && (
+                                        <span className={meta.dot === 'error' ? css.actBroken : css.actWarn}>
+                                          <StateDot state={meta.dot} size={7} />
+                                          {meta.label}
+                                        </span>
                                       )}
+                                      {act.state !== 'live' && act.reasons.length > 0 && (
+                                        <DisclosureRow
+                                          icon={<IconQuestionOutline14 size={14} />}
+                                          title={t('actWhy')}
+                                          open={whyOpen === name}
+                                          expandable
+                                          expandOnRowClick
+                                          onToggle={() => setWhyOpen(whyOpen === name ? null : name)}
+                                          className={css.actWhy}
+                                        >
+                                          <div className={css.spec}>{act.reasons.join(' / ')}</div>
+                                        </DisclosureRow>
+                                      )}
+                                    </div>
+                                  )}
                                   {entry !== undefined && entry.deprecated === true && (
                                     <div className={css.deprecate} style={{ marginTop: 8 }}>
                                       <div className={css.depLine}>
@@ -2910,79 +2942,60 @@ export function MarketSection(props: MarketSectionProps) {
                                     </div>
                                   )}
                                 </div>
-                                {/* At half width the identity and the controls cannot
-                                    share a line, so the row is two stacked bands. Left
-                                    as one wrapping line, neighbouring cards broke at
-                                    different points and stopped lining up.
-                                    The market itself never reaches this row (filtered
-                                    out above — it manages itself from its own settings
-                                    card), so no self-toggle special case is needed. */}
+                                {/* Footer: the primary action (update) on the left, management
+                                    (replacement + uninstall) on the right, divided from the
+                                    facts above. The market itself never reaches this row
+                                    (filtered out above — it manages itself from its own
+                                    settings card), so no self-toggle special case is needed. */}
                                 <div className={css.irowActions}>
-                                {/* Dot + tag, the pairing the host's own plugin
-                                    inventory uses for exactly this state. */}
-                                {!missing && (
-                                  <span className={css.stateTag} data-on={off ? 'false' : 'true'}>
-                                    <span className={css.stateDot} data-on={off ? 'false' : 'true'} />
-                                    {off ? t('disabledState') : t('switchOnLabel')}
-                                  </span>
-                                )}
-                                {toggleable && (
-                                  <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={!off}
-                                    aria-label={(off ? t('enable') : t('disable')) + ' ' + name}
-                                    className={off ? css.switch : `${css.switch} ${css.switchOn}`}
-                                    disabled={togglingName !== null || busyUrl !== null || updatingName !== null || removingName !== null}
-                                    onClick={() => doToggle(name, off)}
-                                  >
-                                    <span className={css.switchKnob} />
-                                  </button>
-                                )}
-                                {entry !== undefined && entry.deprecated === true && entry.replacement !== undefined && (() => {
-                                  const replacement = data?.plugins.find(r => r.name === entry.replacement)
-                                  if (replacement === undefined) return null
-                                  return (
-                                    <>
-                                      <Button variant="outline" size="sm" onClick={() => { setCat('all'); setQ(entry.replacement!); setTab('discover') }}>{t('viewReplacement')}</Button>
-                                      {!isInstalled(replacement, installed, repoIdentities, data?.plugins, repoHints) && (
-                                        <Button variant="outline" size="sm" onClick={() => setConfirming(replacement)}>{t('installReplacement')}</Button>
-                                      )}
-                                    </>
-                                  )
-                                })()}
-                                {missing
-                                  ? <span className={css.metaTag}>{t('notInstalled')}</span>
-                                  : updatedNames.includes(name)
-                                    ? <span className={`${css.metaTag} ${css.metaTagOk}`}>{act?.state === 'live' ? t('updatedLive') : t('updated')}</span>
-                                    : updatingName === name
-                                      ? <Button variant="primary" size="sm" className={css.warnBtn} disabled>{t('updating')}</Button>
-                                      : status && status.updateAvailable
-                                        ? (
-                                            <Button
-                                              variant="primary"
-                                              size="sm"
-                                              className={css.warnBtn}
-                                              disabled={updatingName !== null}
-                                              onClick={() => doUpdate(name)}
-                                            >{t('update')}</Button>
-                                          )
-                                        : status && status.kind === 'linked'
-                                          ? <span className={css.metaTag}>{t('linkedDev')}</span>
-                                          : <span className={css.metaTag}>{t('upToDate')}</span>}
-                                {!missing && name !== 'dsh-market' && name !== 'dshmarket' && (
-                                  removingName === name
-                                    ? <Button variant="outline" size="sm" className={css.dangerBtn} disabled>{t('uninstalling')}</Button>
-                                    : (
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className={css.dangerBtn}
-                                          disabled={removingName !== null || busyUrl !== null || updatingName !== null}
-                                          onClick={() => setRemoveConfirm(name)}
-                                        >{t('uninstall')}</Button>
+                                  <div className={css.irowUpdate}>
+                                    {missing
+                                      ? <span className={css.metaTag}>{t('notInstalled')}</span>
+                                      : updatedNames.includes(name)
+                                        ? <span className={`${css.metaTag} ${css.metaTagOk}`}>{act?.state === 'live' ? t('updatedLive') : t('updated')}</span>
+                                        : updatingName === name
+                                          ? <Button variant="primary" size="sm" className={css.warnBtn} disabled>{t('updating')}</Button>
+                                          : status && status.updateAvailable
+                                            ? (
+                                                <Button
+                                                  variant="primary"
+                                                  size="sm"
+                                                  className={css.warnBtn}
+                                                  disabled={updatingName !== null}
+                                                  onClick={() => doUpdate(name)}
+                                                >{t('update')}</Button>
+                                              )
+                                            : status && status.kind === 'linked'
+                                              ? <span className={css.metaTag}>{t('linkedDev')}</span>
+                                              : <span className={css.metaTag}>{t('upToDate')}</span>}
+                                  </div>
+                                  <div className={css.irowManage}>
+                                    {entry !== undefined && entry.deprecated === true && entry.replacement !== undefined && (() => {
+                                      const replacement = data?.plugins.find(r => r.name === entry.replacement)
+                                      if (replacement === undefined) return null
+                                      return (
+                                        <>
+                                          <Button variant="outline" size="sm" onClick={() => { setCat('all'); setQ(entry.replacement!); setTab('discover') }}>{t('viewReplacement')}</Button>
+                                          {!isInstalled(replacement, installed, repoIdentities, data?.plugins, repoHints) && (
+                                            <Button variant="outline" size="sm" onClick={() => setConfirming(replacement)}>{t('installReplacement')}</Button>
+                                          )}
+                                        </>
                                       )
-                                )}
+                                    })()}
+                                    {!missing && name !== 'dsh-market' && name !== 'dshmarket' && (
+                                      removingName === name
+                                        ? <Button variant="outline" size="sm" className={css.dangerBtn} disabled>{t('uninstalling')}</Button>
+                                        : (
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              className={css.dangerBtn}
+                                              disabled={removingName !== null || busyUrl !== null || updatingName !== null}
+                                              onClick={() => setRemoveConfirm(name)}
+                                            >{t('uninstall')}</Button>
+                                          )
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             )
